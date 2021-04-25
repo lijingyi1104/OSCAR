@@ -108,4 +108,4 @@ Out_scen = model(Ini_scen, Par, For_scen
     , var_keep=var_keep)    
         ##----
 filename = 'base'
-Out_scen.to_netcdf('results/' + 'scen_' + '_Out_scen.nc', encoding={var:{'zlib':True, 'dtype':np.float32} for var in Out_scen})
+Out_scen.to_netcdf('results/' + 'scen_' + 'Out_scen.nc', encoding={var:{'zlib':True, 'dtype':np.float32} for var in Out_scen})
