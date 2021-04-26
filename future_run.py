@@ -42,15 +42,30 @@ RCP2.6----???NP
 '''
 For_scen_ljy = For_scen.copy(deep=True)
 
-temp = For_scen.Eff.sel(config=0).sel(scen='RCP2.6').values
-print(temp.shape)
-temp *= 0
-temp[-1]=np.array([1,2,3,3,2,1])
-## temp为(87,6)的数组形式
+
+# %%
+# filename = 'scen_data/'+'test2'+'.csv'
+# data = pd.read_csv(filename)
+# temp = data.values.T
+
+# for i in range(nMC):
+#     # print(i)
+#     For_scen_ljy.sel(scen='RCP2.6').sel(config=i)['Eff'].values[:] = temp
+
+# %%
 
 for i in range(nMC):
-    # print(i)
+
+    ran = np.random.randint(0,5)
+    filename = 'scen_data/'+str(ran)+'.csv'
+
+    data = pd.read_csv(filename)
+    temp = data.values.T
+
     For_scen_ljy.sel(scen='RCP2.6').sel(config=i)['Eff'].values[:] = temp
+
+
+
 
 # %%
 Out_scen = model(Ini_scen, Par, For_scen_ljy,var_keep=var_keep)  
