@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
@@ -35,13 +36,25 @@ with xr.open_dataset('parameters/scen_For.nc') as TMP: For_scen = TMP.load()
 
 
 # %%
-'''
-将排放数据替换成自己的
-RCP2.6----???NP
-'''
 For_scen_ljy = For_scen.copy(deep=True)
 
+#%%
+def replace_basic(nMC, driver_bas):
+    for i in range(nMC):
+        For_scen_ljy.sel(scen = 'RCP2.6').sel(config = i)[driver_bas].values[:] = For_scen_ljy.sel(scen = 'RCP4.5').sel(config = i)[driver_bas].values[:]
+        For_scen_ljy.sel(scen = 'RCP6.0').sel(config = i)[driver_bas].values[:] = For_scen_ljy.sel(scen = 'RCP4.5').sel(config = i)[driver_bas].values[:]
+        For_scen_ljy.sel(scen = 'RCP8.5').sel(config = i)[driver_bas].values[:] = For_scen_ljy.sel(scen = 'RCP4.5').sel(config = i)[driver_bas].values[:]
+    return For_scen_ljy
 
+For_scen_ljy=replace_basic(nMC, 'E_Xhalo')
+For_scen_ljy=replace_basic(nMC, 'E_NOX')
+For_scen_ljy=replace_basic(nMC, 'E_CO')
+For_scen_ljy=replace_basic(nMC, 'E_VOC')
+For_scen_ljy=replace_basic(nMC, 'E_NH3')
+For_scen_ljy=replace_basic(nMC, 'E_OC')
+
+        
+        
 # %%替换function
 def replace(number,filekey, Scen, nMC, driver):
     for i in range(nMC):
@@ -85,9 +98,9 @@ Out_scen.to_netcdf('results/' + 'scen_Out_ljy.nc', encoding={var:{'zlib':True, '
 
 #%%
 plt.plot(Out_scen.D_Tg.mean('config'))
-
-
-
-
-
-
+plt.plot(Out_scen.D_CO2.mean('config'))
+#%%
+plt.plot(Out_scen.D_Tg.mean('config').sel(scen='RCP2.6'))
+plt.plot(Out_scen.D_Tg.mean('config').sel(scen='RCP4.5'))
+plt.plot(Out_scen.D_Tg.mean('config').sel(scen='RCP6.0'))
+plt.plot(Out_scen.D_Tg.mean('config').sel(scen='RCP8.5'))
