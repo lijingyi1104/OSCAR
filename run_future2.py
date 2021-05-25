@@ -59,6 +59,7 @@ For_scen_ljy=replace_basic(nMC, 'E_OC')
 def replace(number,filekey, Scen, nMC, driver):
     for i in range(nMC):
         ran = np.random.randint(0,number)
+        ran = 0
         filename = 'scen_data/' + filekey + str(ran) + '.csv'
         data = pd.read_csv(filename)
         temp = data.values.T
@@ -90,12 +91,19 @@ For_scen_ljy = replace(5,'CD_SO2_NP', 'RCP4.5', nMC, 'E_SO2')
 For_scen_ljy = replace(5,'AD_SO2_NDC', 'RCP6.0', nMC, 'E_SO2')
 For_scen_ljy = replace(5,'AD_SO2_NP', 'RCP8.5', nMC, 'E_SO2')
 
+# %%
+plt.plot(For_scen_ljy.mean('config').Eff.sel(scen='RCP2.6').sum('reg_land'))
+# plt.plot(For_scen_ljy.mean('config').Eff.sel(scen='RCP4.5').sum('reg_land'))
+plt.plot(For_scen_ljy.mean('config').Eff.sel(scen='RCP6.0').sum('reg_land'))
+# plt.plot(For_scen_ljy.mean('config').Eff.sel(scen='RCP8.5').sum('reg_land'))
+
 
 # %%
 Out_scen = model(Ini_scen, Par, For_scen_ljy,var_keep=var_keep)  
 filename = 'base'
-Out_scen.to_netcdf('results/' + 'scen_Out_ljy.nc', encoding={var:{'zlib':True, 'dtype':np.float32} for var in Out_scen})
+Out_scen.to_netcdf('results/' + 'scen_Out_ljy_0.nc', encoding={var:{'zlib':True, 'dtype':np.float32} for var in Out_scen})
 
+'''
 #%%
 plt.plot(Out_scen.D_Tg.mean('config'))
 plt.plot(Out_scen.D_CO2.mean('config'))
@@ -104,3 +112,25 @@ plt.plot(Out_scen.D_Tg.mean('config').sel(scen='RCP2.6'))
 plt.plot(Out_scen.D_Tg.mean('config').sel(scen='RCP4.5'))
 plt.plot(Out_scen.D_Tg.mean('config').sel(scen='RCP6.0'))
 plt.plot(Out_scen.D_Tg.mean('config').sel(scen='RCP8.5'))
+'''
+# %%
+
+# 区域1减排量增加0.001
+
+filename_list = ['','ASIA','LAM','MEA','OECD','REF']
+#reg_land = 1
+for reg_land in [1,2,3,4,5]:
+    #for emi in ['Eff','E_CH4','E_N2O','E_BC','E_SO2']:
+    for emi in ['Eff']:
+        For_scen_tmp =  For_scen_ljy.copy(deep=True)
+        temp_0=For_scen_tmp[emi].sel(reg_land=reg_land).sel(scen='RCP4.5').values-For_scen_tmp[emi].sel(reg_land=reg_land).sel(scen='RCP2.6').values
+        temp_1=For_scen_tmp[emi].sel(reg_land=reg_land).sel(scen='RCP2.6')+temp_0/1000
+        For_scen_tmp[emi].sel(scen = 'RCP2.6').sel(reg_land=reg_land).values[:] = temp_1.values
+   
+    Out_scen = model(Ini_scen, Par, For_scen_tmp,var_keep=var_keep)  
+    filename =filename_list[reg_land]
+    Out_scen.to_netcdf('results/' + filename + 'scen_Out_tmp_0_Eff.nc', encoding={var:{'zlib':True, 'dtype':np.float32} for var in Out_scen})
+    
+
+
+
